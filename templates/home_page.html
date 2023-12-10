@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home_page.css') }}">
+</head>
+<body>
+  <div class="content">
+    </div>
+  <div class="chat-container">
+    <div class="chat-box">
+      <div class="chat" id="chat">
+        
+        </div>
+      <div class="input-box">
+        
+        <textarea id="user-input" placeholder="Type your message..." oninput="adjustHeight(this)"></textarea>
+        <button id="user-input" onclick="sendMessage()">Go</button>
+        
+      </div>
+      
+    </div>
+    
+  </div>
+  
+
+  <script>
+    async function sendMessage() {
+        const userInput = document.getElementById('user-input').value;
+        if (userInput) {
+          // Display the user's message in the chat
+          const chatBox = document.getElementById('chat');
+          const userMessage = document.createElement('div');
+          userMessage.className = 'user';
+          userMessage.textContent = 'User: ' + userInput;
+          chatBox.appendChild(userMessage);
+      
+          // Clear the input field
+          document.getElementById('user-input').value = '';
+      
+          // Scroll to the bottom of the chat to show the latest message
+          chatBox.scrollTop = chatBox.scrollHeight;
+      
+          // Send the user message to the server using AJAX and wait for the response
+          try {
+            const response = await fetch('/get_response', {
+              method: 'POST',
+              body: new URLSearchParams({ user_message: userInput }),
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            });
+      
+            const data = await response.json();
+      
+            // Display the bot's response in the chat
+            const botMessage = document.createElement('div');
+            botMessage.className = 'bot';
+            const botResponseWithLineBreaks = data.bot_response.replace(/\n/g, '<br>');
+            botMessage.innerHTML = 'Bot: ' + botResponseWithLineBreaks;
+            chatBox.appendChild(botMessage);
+      
+            // Scroll to the bottom again to show the latest message (bot's response)
+            chatBox.scrollTop = chatBox.scrollHeight;
+          } catch (error) {
+            console.error('Error fetching bot response: ' + error);
+          }
+        }
+      }
+      
+
+    function adjustHeight(textarea) {
+      // Adjust the height of the textarea to fit its content
+      textarea.style.height = '2px';
+      textarea.style.height = (textarea.scrollHeight) + 'px';
+  
+    }
+  </script>
+</body>
+</html>
